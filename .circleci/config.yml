@@ -940,7 +940,20 @@ jobs:
       - checkout
       - run:
           name: Check for error codes
-          command: scripts/error_codes.py --check
+          command: |
+            # debug
+            echo "CIRCLE_PULL_REQUEST: $CIRCLE_PULL_REQUEST"
+            
+            # Set target branch for PR or use develop for direct pushes
+            if [[ -n "$CIRCLE_PULL_REQUEST" ]]; then
+              PR_TARGET_BRANCH="origin/$CIRCLE_TARGET_BRANCH"
+            else
+              PR_TARGET_BRANCH="origin/develop"
+            fi
+            export PR_TARGET_BRANCH
+
+            scripts/error_codes.py --check
+            scripts/error_codes.py --check-removed
       - matrix_notify_failure_unless_pr
 
   chk_pylint:
